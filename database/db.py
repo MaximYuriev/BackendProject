@@ -1,6 +1,7 @@
 from database.config import settings
 from sqlalchemy import create_engine, text,MetaData,Table
 from models.users import Base
+import os
 ur_s = settings.POSTGRES_DATABASE_URLS
 print(ur_s)
 engine_s = create_engine(ur_s,echo= True)
@@ -67,3 +68,4 @@ def create_tables():
     create_algorithms()
     create_roles()
     create_procedural_position()
+    create_first_department()

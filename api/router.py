@@ -112,6 +112,8 @@ def create_user(item: Register_User,DB: Session = Depends(get_session)):
         if department is None:
             return JSONResponse(status_code= 404, content={"message": "Указанный отдел не найден!"})
         if item.role != 1:
+            if department.departments_id == 1:
+                return JSONResponse(status_code= 400, content={"message": "В этот отдел может быть добавлен только администартор!"})
             users_department = DB.query(User).filter(User.fk_department_id==item.fk_department_id).first()
             if (users_department is None) and (item.role!=4):
                 return JSONResponse(status_code= 404, content={"message": "Начальник отдела не найден!"})
@@ -137,6 +139,7 @@ def create_user(item: Register_User,DB: Session = Depends(get_session)):
         DB.add(user)
         DB.commit()
         DB.refresh(user)
+        
         os.mkdir(f'media/{user.id}')
         os.mkdir(f'media/{user.id}/profile')
         if item.role == 2:
@@ -294,6 +297,9 @@ def create_case(item:createCase,DB: Session = Depends(get_session)):
         return JSONResponse(status_code= 404, content={"message": "Алгоритм не найден в системе"})
     if check_unique_statement(item.FK_statement_id,DB)==False:
         return JSONResponse(status_code= 400, content={"message": "Заявление должно быть уникально"})
+    user = DB.query(User).filter(User.id==item.fk_user_id).first()
+    if user.FK_user_roles_id != 2:
+        return JSONResponse(status_code= 400, content={"message": "Только следователь может заводить дела!"})
     cases = Case(FK_statement_id=item.FK_statement_id,fk_user_id=item.fk_user_id,fk_algoritm_id=item.fk_algoritm_id,number_cases=item.number_cases)
     if cases is None:
         return JSONResponse(status_code= 404, content={"message": "Объект не определен"})
